@@ -9,3 +9,5 @@ h1 { margin: 0; font-size: 22px; }
 .row.sev2 .sev { color: #a15c00; }
 .row time { color: #555; font-variant-numeric: tabular-nums; }
 footer { color: #777; font-size: 13px; }
+.loader, .empty { color: #666; }
+.row .acked { color: #2e7d32; font-weight: 600; }
