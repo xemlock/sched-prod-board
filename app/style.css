@@ -11,3 +11,5 @@ h1 { margin: 0; font-size: 22px; }
 footer { color: #777; font-size: 13px; }
 .loader, .empty { color: #666; }
 .row .acked { color: #2e7d32; font-weight: 600; }
+.new-bar { display: block; width: 100%; max-width: 960px; margin: 0 0 8px; padding: 10px 12px; border: 0; border-radius: 6px; background: #1d4ed8; color: #fff; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.new-bar[hidden] { display: block; visibility: hidden; } /* keeps its space, so rows never move when it shows */

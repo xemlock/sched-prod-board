@@ -5,7 +5,10 @@ const REFRESH_MS = 2000;
 const list = document.querySelector('[data-testid="incident-list"]');
 const loader = document.querySelector('[data-testid="loader"]');
 const empty = document.querySelector('[data-testid="empty"]');
+const newBar = document.querySelector('[data-testid="new-bar"]');
 const acked = new Set();
+const shown = new Set();
+let latest = [];
 
 // Viewer's own zone and locale order (R5): en-GB/de-DE put the day first, en-US the month.
 const timeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' });
@@ -46,10 +49,12 @@ function ackedMark() {
   return mark;
 }
 
-// Keyed by id, so rows keep their Ack state and focus across refreshes; new ones land on top (R1).
-function render(incidents) {
+// Keyed by id, so rows keep their Ack state and focus across refreshes. The list holds still while it is
+// on screen: incidents that arrive later wait behind the "N new" bar until on-call brings them in.
+function render() {
+  const visible = latest.filter((i) => shown.has(i.id));
   const existing = new Map([...list.children].map((li) => [li.dataset.id, li]));
-  incidents.forEach((i, index) => {
+  visible.forEach((i, index) => {
     const li = existing.get(i.id) ?? row(i);
     existing.delete(i.id);
     li.className = `row ${i.severity}`;
@@ -61,12 +66,22 @@ function render(incidents) {
     if (list.children[index] !== li) list.insertBefore(li, list.children[index] ?? null);
   });
   existing.forEach((li) => li.remove());
-  empty.hidden = incidents.length > 0;
+  empty.hidden = visible.length > 0;
+  const waiting = latest.length - visible.length;
+  newBar.hidden = waiting === 0;
+  newBar.textContent = `${waiting} new incident${waiting === 1 ? '' : 's'} · show`;
 }
+
+newBar.addEventListener('click', () => {
+  latest.forEach((i) => shown.add(i.id));
+  render();
+});
 
 async function refresh() {
   try {
-    render((await fetchIncidents()).incidents);
+    latest = (await fetchIncidents()).incidents;
+    if (loader.isConnected) latest.forEach((i) => shown.add(i.id));
+    render();
     loader.remove();
   } catch (err) {
     console.error(err);
